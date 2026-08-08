@@ -1,0 +1,9 @@
+Place trained artifacts here, exported from the Colab notebook:
+
+  v1_decision_tree.joblib
+  symptom_vocab.json
+  label_classes.json
+  symptom_description.csv   (from the Kaggle dataset)
+  symptom_precaution.csv    (from the Kaggle dataset)
+
+See ../notebooks/README.md and ../README.md for the export snippet.
