@@ -1,0 +1,25 @@
+services:
+  gateway:
+    build: ./gateway
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+      DIAGNOSIS_SERVICE_URL: "http://disease-diagnosis:8000"
+      ALLOWED_ORIGINS: "*"
+    depends_on:
+      - disease-diagnosis
+
+  disease-diagnosis:
+    build: ./services/disease-diagnosis
+    ports:
+      - "8000:8000"
+    environment:
+      MODEL_FILENAME: "v1_decision_tree.joblib"
+      MODEL_VERSION: "v1-decision-tree"
+    volumes:
+      - ./services/disease-diagnosis/models:/service/models
+
+  # imaging, drug-recommendation, and chatbot services are added here
+  # once each is built. Until then the gateway's stub handlers cover
+  # their routes.
