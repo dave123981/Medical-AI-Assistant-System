@@ -47,5 +47,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/dave123981/medical-ai-assistant-system:latest
+            ghcr.io/dave123981/medical-ai-assistant-system:${{ github.sha }}
