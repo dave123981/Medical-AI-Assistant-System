@@ -16,6 +16,16 @@ func NewDiagnosisHandler(client *clients.DiagnosisClient) *DiagnosisHandler {
 	return &DiagnosisHandler{Client: client}
 }
 
+// GetSymptoms handles GET /api/v1/diagnosis/symptoms
+func (h *DiagnosisHandler) GetSymptoms(w http.ResponseWriter, r *http.Request) {
+	resp, err := h.Client.GetSymptoms(r.Context())
+	if err != nil {
+		writeError(w, http.StatusBadGateway, "diagnosis_service_error", err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, resp)
+}
+
 // Predict handles POST /api/v1/diagnosis/predict
 func (h *DiagnosisHandler) Predict(w http.ResponseWriter, r *http.Request) {
 	var req models.DiagnosisRequest
