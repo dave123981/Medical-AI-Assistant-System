@@ -1,21 +1,92 @@
-// Points at the Go API Gateway, not the Python service directly.
-// Override via a query param or hardcode for your deployment, e.g.
-// http://localhost:8080 for local dev.
 const GATEWAY_URL = window.GATEWAY_URL || "http://localhost:8080";
 
 const form = document.getElementById("diagnosis-form");
 const resultEl = document.getElementById("result");
+const checklistEl = document.getElementById("symptom-checklist");
+const filterInput = document.getElementById("symptom-filter");
+const countEl = document.getElementById("symptom-count");
+const submitButton = form.querySelector("button[type='submit']");
+
+let allSymptoms = [];
+
+function displayLabel(symptom) {
+  // "skin_rash" -> "Skin rash" — purely cosmetic; the checkbox's
+  // underlying value stays the exact vocab string sent to the backend.
+  const spaced = symptom.replace(/_/g, " ");
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+
+function renderChecklist(symptoms) {
+  if (symptoms.length === 0) {
+    checklistEl.innerHTML = '<p class="empty-text">No symptoms available. Is the model loaded?</p>';
+    return;
+  }
+
+  checklistEl.innerHTML = symptoms
+    .map(
+      (symptom) => `
+      <label data-symptom="${symptom}">
+        <input type="checkbox" name="symptom" value="${symptom}" />
+        ${displayLabel(symptom)}
+      </label>
+    `
+    )
+    .join("");
+}
+
+function applyFilter() {
+  const query = filterInput.value.trim().toLowerCase();
+  const labels = checklistEl.querySelectorAll("label[data-symptom]");
+  let visibleCount = 0;
+
+  labels.forEach((label) => {
+    const matches = label.dataset.symptom.replace(/_/g, " ").includes(query);
+    label.classList.toggle("hidden", !matches);
+    if (matches) visibleCount++;
+  });
+
+  countEl.textContent = query
+    ? `Showing ${visibleCount} of ${allSymptoms.length} symptoms`
+    : `${allSymptoms.length} symptoms available`;
+}
+
+async function loadSymptoms() {
+  try {
+    const res = await fetch(`${GATEWAY_URL}/api/v1/diagnosis/symptoms`);
+    const data = await res.json();
+
+    if (!res.ok) {
+      checklistEl.innerHTML = `<p class="empty-text">Could not load symptoms: ${escapeHtml(
+        data.detail || data.error || "unknown error"
+      )}</p>`;
+      submitButton.disabled = true;
+      return;
+    }
+
+    allSymptoms = data.symptoms || [];
+    renderChecklist(allSymptoms);
+    countEl.textContent = `${allSymptoms.length} symptoms available`;
+  } catch (err) {
+    checklistEl.innerHTML = `<p class="empty-text">Could not reach the API gateway at ${GATEWAY_URL}.</p>`;
+    submitButton.disabled = true;
+  }
+}
+
+filterInput.addEventListener("input", applyFilter);
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const age = Number(document.getElementById("age").value);
   const gender = document.getElementById("gender").value;
-  const symptomsRaw = document.getElementById("symptoms").value;
-  const symptoms = symptomsRaw
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const symptoms = Array.from(
+    checklistEl.querySelectorAll("input[name='symptom']:checked")
+  ).map((el) => el.value);
+
+  if (symptoms.length === 0) {
+    showError("Select at least one symptom.");
+    return;
+  }
 
   showLoading();
 
@@ -83,3 +154,5 @@ function escapeHtml(str) {
   div.textContent = str;
   return div.innerHTML;
 }
+
+loadSymptoms();
