@@ -30,15 +30,17 @@
       </div>
 
       <div class="field-row">
-        <label for="symptoms">Symptoms</label>
+        <label for="symptom-filter">Symptoms</label>
         <input
           type="text"
-          id="symptoms"
-          name="symptoms"
-          placeholder="e.g. headache, fatigue, nausea (comma-separated)"
-          required
+          id="symptom-filter"
+          placeholder="Type to filter the list below…"
+          autocomplete="off"
         />
-        <small>Separate multiple symptoms with commas.</small>
+        <div id="symptom-count" class="symptom-count"></div>
+        <div id="symptom-checklist" class="symptom-checklist">
+          <p class="loading-text">Loading symptom list…</p>
+        </div>
       </div>
 
       <button type="submit">Get Prediction</button>
