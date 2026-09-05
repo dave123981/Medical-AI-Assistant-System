@@ -25,18 +25,6 @@ class PatientInput(BaseModel):
     lab_values: Optional[Dict[str, float]] = None
     medical_history: Optional[List[str]] = None
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "age": 34,
-                "gender": "female",
-                "symptoms": ["headache", "fatigue", "nausea"],
-                "vital_signs": None,
-                "lab_values": None,
-                "medical_history": []
-            }
-        }
-
 
 class DiseasePrediction(BaseModel):
     disease: str
@@ -50,3 +38,8 @@ class PredictionResponse(BaseModel):
     description: Optional[str] = None
     precautions: Optional[List[str]] = None
     model_version: str
+
+
+class SymptomsResponse(BaseModel):
+    symptoms: List[str]
+    count: int
