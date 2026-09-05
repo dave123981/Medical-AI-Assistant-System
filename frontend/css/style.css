@@ -83,6 +83,61 @@ button:hover {
   opacity: 0.9;
 }
 
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.symptom-count {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  margin-top: 2px;
+}
+
+.symptom-checklist {
+  margin-top: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.symptom-checklist label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+  font-size: 0.9rem;
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.symptom-checklist label:hover {
+  background: var(--color-bg);
+}
+
+.symptom-checklist input[type="checkbox"] {
+  width: auto;
+  padding: 0;
+  cursor: pointer;
+}
+
+.symptom-checklist label.hidden {
+  display: none;
+}
+
+.loading-text, .empty-text {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  padding: 8px;
+  margin: 0;
+}
+
 .result {
   margin-top: 20px;
   background: var(--color-surface);
