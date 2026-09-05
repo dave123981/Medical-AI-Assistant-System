@@ -9,43 +9,44 @@ package models
 // so that v2+ models (which may be trained on richer data) can
 // start using them without breaking the API shape.
 type DiagnosisRequest struct {
-	Age            int               `json:"age" validate:"required,gte=0,lte=120"`
-	Gender         string            `json:"gender" validate:"required,oneof=male female other"`
-	Symptoms       []string          `json:"symptoms" validate:"required,min=1"`
-	VitalSigns     *VitalSigns       `json:"vital_signs,omitempty"`
+	Age            int                `json:"age" validate:"required,gte=0,lte=120"`
+	Gender         string             `json:"gender" validate:"required,oneof=male female other"`
+	Symptoms       []string           `json:"symptoms" validate:"required,min=1"`
+	VitalSigns     *VitalSigns        `json:"vital_signs,omitempty"`
 	LabValues      map[string]float64 `json:"lab_values,omitempty"`
-	MedicalHistory []string          `json:"medical_history,omitempty"`
+	MedicalHistory []string           `json:"medical_history,omitempty"`
 }
 
-// VitalSigns is optional in v1 and reserved for later model versions.
 type VitalSigns struct {
-	TemperatureC     *float64 `json:"temperature_c,omitempty"`
-	HeartRateBPM     *int     `json:"heart_rate_bpm,omitempty"`
-	RespiratoryRate  *int     `json:"respiratory_rate,omitempty"`
-	SystolicBP       *int     `json:"systolic_bp,omitempty"`
-	DiastolicBP      *int     `json:"diastolic_bp,omitempty"`
+	TemperatureC    *float64 `json:"temperature_c,omitempty"`
+	HeartRateBPM    *int     `json:"heart_rate_bpm,omitempty"`
+	RespiratoryRate *int     `json:"respiratory_rate,omitempty"`
+	SystolicBP      *int     `json:"systolic_bp,omitempty"`
+	DiastolicBP     *int     `json:"diastolic_bp,omitempty"`
 }
 
-// DiseasePrediction is one candidate diagnosis with its probability.
 type DiseasePrediction struct {
 	Disease     string  `json:"disease"`
 	Probability float64 `json:"probability"`
 }
 
-// DiagnosisResponse is the canonical output contract for Service 1.
-// This shape is what the Drug Recommendation and Chatbot services
-// will eventually consume as their own input, per the system diagram.
 type DiagnosisResponse struct {
 	PredictedDisease string              `json:"predicted_disease"`
 	Confidence       float64             `json:"confidence"`
 	TopCandidates    []DiseasePrediction `json:"top_candidates"`
 	Description      string              `json:"description,omitempty"`
 	Precautions      []string            `json:"precautions,omitempty"`
-	ModelVersion      string              `json:"model_version"`
+	ModelVersion     string              `json:"model_version"`
 }
 
-// ErrorResponse is the standard error envelope for every gateway route.
+// SymptomsResponse mirrors the Python service's /symptoms response —
+// the ordered vocabulary the currently-loaded model was trained on.
+type SymptomsResponse struct {
+	Symptoms []string `json:"symptoms"`
+	Count    int      `json:"count"`
+}
+
 type ErrorResponse struct {
-	Error   string `json:"error"`
-	Detail  string `json:"detail,omitempty"`
+	Error  string `json:"error"`
+	Detail string `json:"detail,omitempty"`
 }
