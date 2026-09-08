@@ -5,9 +5,12 @@ const resultEl = document.getElementById("result");
 const checklistEl = document.getElementById("symptom-checklist");
 const filterInput = document.getElementById("symptom-filter");
 const countEl = document.getElementById("symptom-count");
+const selectedEl = document.getElementById("selected-symptoms");
+const selectedCountEl = document.getElementById("selected-count");
 const submitButton = form.querySelector("button[type='submit']");
 
 let allSymptoms = [];
+const selectedSymptoms = new Set();
 
 function displayLabel(symptom) {
   // "skin_rash" -> "Skin rash" — purely cosmetic; the checkbox's
@@ -33,6 +36,55 @@ function renderChecklist(symptoms) {
     )
     .join("");
 }
+
+function renderSelected() {
+  selectedCountEl.textContent = selectedSymptoms.size;
+
+  if (selectedSymptoms.size === 0) {
+    selectedEl.innerHTML = '<p class="empty-text">None selected yet.</p>';
+    return;
+  }
+
+  selectedEl.innerHTML = Array.from(selectedSymptoms)
+    .map(
+      (symptom) => `
+      <span class="symptom-chip" data-symptom="${symptom}">
+        ${displayLabel(symptom)}
+        <button type="button" class="chip-remove" data-symptom="${symptom}" aria-label="Remove ${escapeHtml(
+          displayLabel(symptom)
+        )}">×</button>
+      </span>
+    `
+    )
+    .join("");
+}
+
+// Event delegation: one listener handles every checkbox, including ones
+// added/re-filtered after initial render.
+checklistEl.addEventListener("change", (e) => {
+  if (e.target.name !== "symptom") return;
+
+  if (e.target.checked) {
+    selectedSymptoms.add(e.target.value);
+  } else {
+    selectedSymptoms.delete(e.target.value);
+  }
+  renderSelected();
+});
+
+// Clicking the × on a chip unchecks the matching checkbox and updates
+// the selected set — the two views stay in sync either direction.
+selectedEl.addEventListener("click", (e) => {
+  if (!e.target.classList.contains("chip-remove")) return;
+
+  const symptom = e.target.dataset.symptom;
+  selectedSymptoms.delete(symptom);
+
+  const checkbox = checklistEl.querySelector(`input[value="${cssEscape(symptom)}"]`);
+  if (checkbox) checkbox.checked = false;
+
+  renderSelected();
+});
 
 function applyFilter() {
   const query = filterInput.value.trim().toLowerCase();
@@ -79,9 +131,7 @@ form.addEventListener("submit", async (e) => {
 
   const age = Number(document.getElementById("age").value);
   const gender = document.getElementById("gender").value;
-  const symptoms = Array.from(
-    checklistEl.querySelectorAll("input[name='symptom']:checked")
-  ).map((el) => el.value);
+  const symptoms = Array.from(selectedSymptoms);
 
   if (symptoms.length === 0) {
     showError("Select at least one symptom.");
@@ -155,4 +205,12 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+function cssEscape(value) {
+  // Minimal escape for use inside a querySelector attribute value —
+  // symptom names are plain snake_case so this only needs to guard
+  // against characters that would break the selector syntax itself.
+  return value.replace(/(["\\])/g, "\\$1");
+}
+
 loadSymptoms();
+
