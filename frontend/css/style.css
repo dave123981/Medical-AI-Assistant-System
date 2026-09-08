@@ -131,6 +131,44 @@ button:disabled {
   display: none;
 }
 
+.selected-symptoms {
+  margin-top: 4px;
+  min-height: 36px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  border: 1px dashed var(--color-border);
+  border-radius: 6px;
+}
+
+.symptom-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eef2ff;
+  color: var(--color-primary);
+  border-radius: 999px;
+  padding: 4px 6px 4px 12px;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.chip-remove {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 999px;
+}
+
+.chip-remove:hover {
+  background: rgba(37, 99, 235, 0.15);
+}
+
 .loading-text, .empty-text {
   color: var(--color-muted);
   font-size: 0.875rem;
