@@ -2,12 +2,14 @@ import numpy as np
 from fastapi import APIRouter, HTTPException
 
 from app.schemas import PatientInput, PredictionResponse, DiseasePrediction, SymptomsResponse
-from app.model_loader import get_artifacts
+from app.model_loader import get_artifacts, ArtifactMismatchError, ModelLoadError, ModelDiscoveryError
 from app.preprocessing import encode_symptoms
 
 router = APIRouter()
 
 TOP_K = 3
+
+LOAD_ERRORS = (FileNotFoundError, ArtifactMismatchError, ModelLoadError, ModelDiscoveryError)
 
 
 @router.get("/health")
@@ -25,7 +27,7 @@ def get_symptoms():
     """
     try:
         artifacts = get_artifacts()
-    except FileNotFoundError as e:
+    except LOAD_ERRORS as e:
         raise HTTPException(status_code=503, detail=str(e))
 
     return SymptomsResponse(symptoms=artifacts.vocab, count=len(artifacts.vocab))
@@ -35,7 +37,7 @@ def get_symptoms():
 def predict(payload: PatientInput):
     try:
         artifacts = get_artifacts()
-    except FileNotFoundError as e:
+    except LOAD_ERRORS as e:
         raise HTTPException(status_code=503, detail=str(e))
 
     vector, unmatched = encode_symptoms(payload.symptoms, artifacts.vocab)
