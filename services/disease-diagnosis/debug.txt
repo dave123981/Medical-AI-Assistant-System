@@ -1,0 +1,7 @@
+   ======================================================================
+MODEL_DIR      : C:\Users\ADMIN PC\Downloads\Medical-AI-Assistant-System\services\disease-diagnosis\models
+Model file     : v4_neural_network.keras  (auto-detected: yes)
+Resolved path  : C:\Users\ADMIN PC\Downloads\Medical-AI-Assistant-System\services\disease-diagnosis\models\v4_neural_network.keras
+File exists?   : YES
+Model version  : v4-neural-network
+======================================================================

@@ -9,6 +9,9 @@ version is trained on data rich enough to support them — don't silently
 fold them into the feature vector without also retraining, or you'll
 get a shape mismatch or, worse, a model that ignores them silently.
 """
+from typing import List
+import numpy as np
+
 def encode_symptoms(symptoms: List[str], vocab: List[str]) -> np.ndarray:
     """
     Returns a (1, len(vocab)) multi-hot row vector. Symptoms not found
