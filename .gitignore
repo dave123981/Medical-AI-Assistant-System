@@ -1,6 +1,7 @@
 frontend/
 gateway/
 
+services/disease-diagnosis/
 services/drug-recommendation/
 services/medical-chatbot/
 services/medical-imaging/
