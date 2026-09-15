@@ -1,7 +1,7 @@
 frontend/
 gateway/
 
-services/disease-diagnosis/models/*
+/services/disease-diagnosis/models/
 services/drug-recommendation/
 services/medical-chatbot/
 services/medical-imaging/
