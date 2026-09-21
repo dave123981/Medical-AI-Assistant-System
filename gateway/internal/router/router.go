@@ -15,14 +15,20 @@ func New(cfg *config.Config) http.Handler {
 	diagnosisClient := clients.NewDiagnosisClient(cfg.DiagnosisServiceURL)
 	diagnosisHandler := handlers.NewDiagnosisHandler(diagnosisClient)
 
+	imagingClient := clients.NewImagingClient(cfg.ImagingServiceURL)
+	imagingHandler := handlers.NewImagingHandler(imagingClient)
+
 	mux.HandleFunc("GET /api/v1/health", handlers.Health)
 
 	// Service 1 — fully wired
 	mux.HandleFunc("GET /api/v1/diagnosis/symptoms", diagnosisHandler.GetSymptoms)
 	mux.HandleFunc("POST /api/v1/diagnosis/predict", diagnosisHandler.Predict)
 
-	// Services 2-4 — stubbed on purpose
-	mux.HandleFunc("POST /api/v1/imaging/analyze", handlers.StubImagingAnalyze)
+	// Service 2 — fully wired
+	mux.HandleFunc("GET /api/v1/imaging/conditions", imagingHandler.GetConditions)
+	mux.HandleFunc("POST /api/v1/imaging/analyze", imagingHandler.Analyze)
+
+	// Services 3-4 — stubbed on purpose
 	mux.HandleFunc("POST /api/v1/drugs/recommend", handlers.StubDrugRecommend)
 	mux.HandleFunc("POST /api/v1/chatbot/ask", handlers.StubChatbotAsk)
 
