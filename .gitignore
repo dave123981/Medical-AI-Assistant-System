@@ -4,7 +4,7 @@ gateway/
 /services/disease-diagnosis/models/
 services/drug-recommendation/
 services/medical-chatbot/
-services/medical-imaging/
+
 
 # Python virtual environments
 .venv/
