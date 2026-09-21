@@ -14,6 +14,7 @@ func main() {
 
 	log.Printf("API Gateway listening on :%s", cfg.Port)
 	log.Printf("Diagnosis service -> %s", cfg.DiagnosisServiceURL)
+	log.Printf("Imaging service   -> %s", cfg.ImagingServiceURL)
 	if err := http.ListenAndServe(":"+cfg.Port, handler); err != nil {
 		log.Fatalf("server failed: %v", err)
 	}
