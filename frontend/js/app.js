@@ -13,8 +13,6 @@ let allSymptoms = [];
 const selectedSymptoms = new Set();
 
 function displayLabel(symptom) {
-  // "skin_rash" -> "Skin rash" — purely cosmetic; the checkbox's
-  // underlying value stays the exact vocab string sent to the backend.
   const spaced = symptom.replace(/_/g, " ");
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
@@ -59,11 +57,8 @@ function renderSelected() {
     .join("");
 }
 
-// Event delegation: one listener handles every checkbox, including ones
-// added/re-filtered after initial render.
 checklistEl.addEventListener("change", (e) => {
   if (e.target.name !== "symptom") return;
-
   if (e.target.checked) {
     selectedSymptoms.add(e.target.value);
   } else {
@@ -72,17 +67,12 @@ checklistEl.addEventListener("change", (e) => {
   renderSelected();
 });
 
-// Clicking the × on a chip unchecks the matching checkbox and updates
-// the selected set — the two views stay in sync either direction.
 selectedEl.addEventListener("click", (e) => {
   if (!e.target.classList.contains("chip-remove")) return;
-
   const symptom = e.target.dataset.symptom;
   selectedSymptoms.delete(symptom);
-
   const checkbox = checklistEl.querySelector(`input[value="${cssEscape(symptom)}"]`);
   if (checkbox) checkbox.checked = false;
-
   renderSelected();
 });
 
@@ -206,11 +196,7 @@ function escapeHtml(str) {
 }
 
 function cssEscape(value) {
-  // Minimal escape for use inside a querySelector attribute value —
-  // symptom names are plain snake_case so this only needs to guard
-  // against characters that would break the selector syntax itself.
   return value.replace(/(["\\])/g, "\\$1");
 }
 
 loadSymptoms();
-
