@@ -2,6 +2,7 @@ frontend/
 gateway/
 
 /services/disease-diagnosis/models/
+/servies/medical-imaging/models/
 services/drug-recommendation/
 services/medical-chatbot/
 
