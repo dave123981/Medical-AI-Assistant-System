@@ -5,20 +5,23 @@ from pydantic import BaseModel
 class ConditionProbability(BaseModel):
     condition: str
     probability: float
-    positive: bool  # True if probability >= the service's decision threshold
+    positive: bool  # True if probability >= this condition's decision threshold
+    threshold_used: float  # the actual threshold applied to THIS condition,
+                            # since thresholds are now per-class, not one global value
 
 
 class ImageAnalysisResponse(BaseModel):
     image_type: str
     findings: List[ConditionProbability]
-    # Convenience list — just the condition names where positive=True. Empty
-    # means the model found nothing above threshold, i.e. "No Finding".
     positive_findings: List[str]
-    threshold: float
-    # None until v4 adds Grad-CAM. Keeping the field here now (rather than
-    # adding it later) means the response shape never changes across
-    # versions — same principle Service 1 follows.
-    heatmap_base64: Optional[str] = None
+    # "per_class_tuned": each condition used its own F1-optimal threshold from
+    # per_class_thresholds.json (falls back to 0.5 for any condition missing
+    # from that file, or for models with no thresholds file at all).
+    # "global_override": the caller passed an explicit threshold, applied
+    # uniformly to every condition instead.
+    threshold_mode: str
+    global_threshold: Optional[float] = None  # set only when threshold_mode == "global_override"
+    heatmap_base64: Optional[str] = None  # None if the model doesn't support Grad-CAM (e.g. v1)
     model_version: str
 
 
