@@ -1,10 +1,7 @@
-frontend/
-gateway/
-
 /services/disease-diagnosis/models/
 /servies/medical-imaging/models/
-services/drug-recommendation/models/
-services/medical-chatbot/
+services/drug-recommendation/data/
+services/medical-chatbot/models/
 
 
 # Python virtual environments

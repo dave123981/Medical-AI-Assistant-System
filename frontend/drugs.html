@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Medical AI Assistant — Drug Recommendation</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main class="container">
+    <nav class="site-nav">
+      <a href="index.html">Disease Diagnosis</a>
+      <a href="imaging.html">Image Analysis</a>
+      <a href="drugs.html" class="active">Drug Recommendation</a>
+      <a href="chatbot.html">Medical Chatbot</a>
+    </nav>
+
+    <header>
+      <h1>Drug Recommendation Assistant</h1>
+      <p class="subtitle">Clinical decision support only — not a prescribing tool.</p>
+    </header>
+
+    <form id="drugs-form">
+      <div class="field-row">
+        <label for="condition-input">Condition</label>
+        <input
+          type="text"
+          id="condition-input"
+          name="condition"
+          list="condition-options"
+          placeholder="Start typing a condition…"
+          autocomplete="off"
+          required
+        />
+        <datalist id="condition-options"></datalist>
+        <div id="condition-count" class="symptom-count"></div>
+      </div>
+
+      <div class="field-row">
+        <label for="age">Age (optional)</label>
+        <input type="number" id="age" name="age" min="0" max="120" />
+      </div>
+
+      <div class="field-row">
+        <label for="current-medications">Current medications (optional)</label>
+        <input
+          type="text"
+          id="current-medications"
+          placeholder="e.g. warfarin, metformin"
+          autocomplete="off"
+        />
+        <small>Comma-separated.</small>
+      </div>
+
+      <div class="field-row">
+        <label for="allergies">Allergies (optional)</label>
+        <input
+          type="text"
+          id="allergies"
+          placeholder="e.g. penicillin, sulfa"
+          autocomplete="off"
+        />
+        <small>Comma-separated.</small>
+      </div>
+
+      <button type="submit" id="recommend-button">Get Recommendations</button>
+    </form>
+
+    <section id="result" class="result hidden"></section>
+  </main>
+
+  <script src="js/drugs.js"></script>
+</body>
+</html>

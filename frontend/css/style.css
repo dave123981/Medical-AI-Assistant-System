@@ -355,3 +355,20 @@ button:disabled {
   text-align: right;
   color: var(--color-muted);
 }
+
+.rules-warning {
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  color: #9a3412;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  margin: 12px 0;
+}
+
+.contraindication-reasons {
+  font-size: 0.75rem;
+  color: var(--color-danger);
+  margin: -4px 0 4px 0;
+  padding-left: 2px;
+}
