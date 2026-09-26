@@ -1,19 +1,15 @@
-"""
-Loads whichever image-classification model is active for a given image
-type (chest_xray, skin_lesion, retinal), each living in its own subfolder
-under MODEL_DIR so adding a new image type later is just "add a folder,"
-not a service restructure.
-
-"""
 import json
 import os
 from functools import lru_cache
 from pathlib import Path
 
+from app.gradcam import find_last_conv_layer_name
+
 MODEL_DIR = Path(os.getenv("IMAGING_MODEL_DIR", Path(__file__).resolve().parent.parent / "models"))
 MODEL_EXTENSIONS = {".keras", ".h5"}
 
 SUPPORTED_IMAGE_TYPES = {"chest_xray", "skin_lesion", "retinal"}
+DEFAULT_THRESHOLD = 0.5
 
 
 class UnsupportedImageTypeError(Exception):
@@ -45,16 +41,29 @@ class ModelLoadError(Exception):
 
 
 class ImagingModelArtifacts:
-    def __init__(self, model, image_type: str, condition_names: list, version: str, input_size: tuple):
+    def __init__(self, model, image_type: str, condition_names: list, version: str,
+                 input_size: tuple, per_class_thresholds: dict,
+                 gradcam_capable: bool, base_model=None, gap_layer=None,
+                 dense_layer=None, last_conv_layer_name=None):
         self.model = model
         self.image_type = image_type
         self.condition_names = condition_names
         self.version = version
         self.input_size = input_size  # (height, width) — read from the model itself
+        self.per_class_thresholds = per_class_thresholds
+
+        self.gradcam_capable = gradcam_capable
+        self.base_model = base_model
+        self.gap_layer = gap_layer
+        self.dense_layer = dense_layer
+        self.last_conv_layer_name = last_conv_layer_name
 
     def predict_proba(self, batch) -> "list[float]":
         """Returns a flat list of per-condition probabilities for one image."""
         return self.model.predict(batch, verbose=0)[0].tolist()
+
+    def get_threshold(self, condition: str) -> float:
+        return self.per_class_thresholds.get(condition, DEFAULT_THRESHOLD)
 
 
 def _resolve_model_filename(image_type: str) -> str:
@@ -100,6 +109,35 @@ def _resolve_model_version(image_type: str, filename: str) -> str:
     return os.getenv(env_var) or _infer_version_from_filename(filename)
 
 
+def _load_per_class_thresholds(image_type: str) -> dict:
+    path = MODEL_DIR / image_type / "per_class_thresholds.json"
+    if not path.exists():
+        return {}
+    with open(path) as f:
+        return json.load(f)
+
+
+def _detect_gradcam_capability(model):
+    """
+    Looks for the shape a transfer-learning model built like v2+ has: a
+    nested pretrained backbone (Functional sub-layer), a
+    GlobalAveragePooling2D, and a Dense output layer. Returns
+    (capable, base_model, gap_layer, dense_layer, last_conv_layer_name) —
+    capable=False (with the rest None) for any model that doesn't match,
+    e.g. v1's plain from-scratch CNN.
+    """
+    try:
+        base_model = next(l for l in model.layers if l.__class__.__name__ == "Functional")
+        gap_layer = next(l for l in model.layers if l.__class__.__name__ == "GlobalAveragePooling2D")
+        dense_layer = next(l for l in model.layers if l.__class__.__name__ == "Dense")
+        last_conv_layer_name = find_last_conv_layer_name(base_model)
+        if last_conv_layer_name is None:
+            return False, None, None, None, None
+        return True, base_model, gap_layer, dense_layer, last_conv_layer_name
+    except StopIteration:
+        return False, None, None, None, None
+
+
 @lru_cache(maxsize=None)
 def get_artifacts(image_type: str) -> ImagingModelArtifacts:
     if image_type not in SUPPORTED_IMAGE_TYPES:
@@ -141,11 +179,24 @@ def get_artifacts(image_type: str) -> ImagingModelArtifacts:
             f"together from the same notebook run."
         )
 
-    # (height, width) from the model's own input shape — e.g. (None, 224, 224, 3)
-    # -> (224, 224). Preprocessing resizes to this dynamically rather than
-    # hardcoding a size, so swapping in a model trained at a different
-    # resolution just works.
+    per_class_thresholds = _load_per_class_thresholds(image_type)
+    if per_class_thresholds:
+        missing = [c for c in condition_names if c not in per_class_thresholds]
+        if missing:
+            raise ArtifactMismatchError(
+                f"per_class_thresholds.json is missing entries for: {', '.join(missing)}. "
+                f"It must cover every condition in condition_names.json, or be absent "
+                f"entirely (in which case all conditions fall back to {DEFAULT_THRESHOLD})."
+            )
+
+    gradcam_capable, base_model, gap_layer, dense_layer, last_conv_layer_name = \
+        _detect_gradcam_capability(model)
+
     input_shape = model.input_shape
     input_size = (input_shape[1], input_shape[2])
 
-    return ImagingModelArtifacts(model, image_type, condition_names, model_version, input_size)
+    return ImagingModelArtifacts(
+        model, image_type, condition_names, model_version, input_size,
+        per_class_thresholds, gradcam_capable, base_model, gap_layer,
+        dense_layer, last_conv_layer_name,
+    )
