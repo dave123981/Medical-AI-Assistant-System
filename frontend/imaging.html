@@ -38,11 +38,15 @@
       </div>
 
       <div class="field-row">
-        <label for="threshold">
-          Decision threshold — <span id="threshold-value">0.50</span>
+        <label class="toggle-label">
+          <input type="checkbox" id="threshold-override-toggle" />
+          Override with a single fixed threshold
         </label>
-        <input type="range" id="threshold" name="threshold" min="0.05" max="0.95" step="0.05" value="0.5" />
-        <small>A finding is flagged "positive" when its probability is at or above this value.</small>
+        <small>Unchecked (recommended): each condition uses its own tuned threshold, learned from validation data. Checked: apply one value to every condition instead.</small>
+        <div id="threshold-slider-wrap" class="hidden">
+          <label for="threshold">Fixed threshold — <span id="threshold-value">0.50</span></label>
+          <input type="range" id="threshold" name="threshold" min="0.01" max="0.95" step="0.01" value="0.5" />
+        </div>
       </div>
 
       <button type="submit" id="analyze-button">Analyze Image</button>
