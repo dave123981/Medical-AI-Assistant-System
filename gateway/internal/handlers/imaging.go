@@ -15,7 +15,9 @@ func NewImagingHandler(client *clients.ImagingClient) *ImagingHandler {
 	return &ImagingHandler{Client: client}
 }
 
-
+// 20MB is generous for a single medical image (chest X-rays are often
+// 1-3MB even at full resolution; this leaves headroom without allowing
+// arbitrarily large uploads to tie up the gateway).
 const maxUploadSize = 20 << 20
 
 // GetConditions handles GET /api/v1/imaging/conditions
@@ -52,14 +54,18 @@ func (h *ImagingHandler) Analyze(w http.ResponseWriter, r *http.Request) {
 		imageType = "chest_xray"
 	}
 
-	threshold := 0.5
+	// nil means "not provided" — let the Python service default to its
+	// per-class tuned thresholds. Only build a pointer when the caller
+	// actually sent a value, so we never silently inject a threshold the
+	// frontend didn't ask for.
+	var threshold *float64
 	if v := r.FormValue("threshold"); v != "" {
 		parsed, err := strconv.ParseFloat(v, 64)
 		if err != nil {
 			writeError(w, http.StatusBadRequest, "invalid_threshold", "threshold must be a number.")
 			return
 		}
-		threshold = parsed
+		threshold = &parsed
 	}
 
 	status, body, err := h.Client.Analyze(r.Context(), file, fileHeader.Filename, imageType, threshold)
