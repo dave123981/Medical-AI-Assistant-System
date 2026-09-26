@@ -7,6 +7,8 @@ const conditionsNoteEl = document.getElementById("conditions-note");
 const fileInput = document.getElementById("image-file");
 const previewWrap = document.getElementById("image-preview-wrap");
 const previewImg = document.getElementById("image-preview");
+const overrideToggle = document.getElementById("threshold-override-toggle");
+const sliderWrap = document.getElementById("threshold-slider-wrap");
 const thresholdInput = document.getElementById("threshold");
 const thresholdValueEl = document.getElementById("threshold-value");
 const analyzeButton = document.getElementById("analyze-button");
@@ -15,10 +17,6 @@ function displayLabel(name) {
   return name.replace(/_/g, " ");
 }
 
-// Loads and displays which conditions the active model for the selected
-// image type actually predicts. A 501 here (image type not built yet)
-// disables submission entirely rather than letting the user hit a dead
-// end after uploading an image.
 async function loadConditions() {
   const imageType = imageTypeSelect.value;
   conditionsNoteEl.textContent = "Loading…";
@@ -68,6 +66,13 @@ fileInput.addEventListener("change", () => {
   reader.readAsDataURL(file);
 });
 
+// The slider only matters (and is only sent) when the override is on —
+// by default the backend picks each condition's own tuned threshold, which
+// means simply not including the field in the request.
+overrideToggle.addEventListener("change", () => {
+  sliderWrap.classList.toggle("hidden", !overrideToggle.checked);
+});
+
 thresholdInput.addEventListener("input", () => {
   thresholdValueEl.textContent = Number(thresholdInput.value).toFixed(2);
 });
@@ -84,14 +89,17 @@ form.addEventListener("submit", async (e) => {
   const formData = new FormData();
   formData.append("image", file);
   formData.append("image_type", imageTypeSelect.value);
-  formData.append("threshold", thresholdInput.value);
+  if (overrideToggle.checked) {
+    formData.append("threshold", thresholdInput.value);
+  }
+  // else: omit entirely, so the backend defaults to per-class tuned thresholds
 
   showLoading();
 
   try {
     const res = await fetch(`${GATEWAY_URL}/api/v1/imaging/analyze`, {
       method: "POST",
-      body: formData, // no Content-Type header — browser sets the multipart boundary itself
+      body: formData,
     });
 
     const data = await res.json();
@@ -133,19 +141,19 @@ function showError(message) {
 function showResult(data) {
   resultEl.classList.remove("hidden", "error");
 
-  // Sort by probability descending so the most notable findings are visible
-  // first without the user having to scan all 14.
   const sortedFindings = [...data.findings].sort((a, b) => b.probability - a.probability);
 
   const findingsHtml = sortedFindings
     .map((f) => {
       const pct = (f.probability * 100).toFixed(1);
+      const thresholdPct = (f.threshold_used * 100).toFixed(1);
       const positiveClass = f.positive ? "finding-positive" : "";
       return `
         <li class="finding-row ${positiveClass}">
           <span class="finding-name">${escapeHtml(displayLabel(f.condition))}</span>
           <span class="finding-bar-track">
             <span class="finding-bar-fill" style="width: ${pct}%"></span>
+            <span class="finding-threshold-tick" style="left: ${thresholdPct}%" title="Threshold: ${thresholdPct}%"></span>
           </span>
           <span class="finding-pct">${pct}%</span>
         </li>
@@ -157,9 +165,24 @@ function showResult(data) {
     ? data.positive_findings.map(displayLabel).join(", ")
     : "None above threshold (No Finding)";
 
+  const thresholdModeText =
+    data.threshold_mode === "global_override"
+      ? `Fixed threshold: ${data.global_threshold}`
+      : "Per-condition tuned thresholds (recommended)";
+
+  const heatmapHtml = data.heatmap_base64
+    ? `
+      <div class="heatmap-wrap">
+        <img src="data:image/png;base64,${data.heatmap_base64}" alt="Grad-CAM heatmap" />
+        <small>Model attention (Grad-CAM) for its top prediction — shown even if that prediction fell below its threshold.</small>
+      </div>
+    `
+    : "";
+
   resultEl.innerHTML = `
     <h2>${escapeHtml(positiveSummary)}</h2>
-    <p><small>Threshold: ${data.threshold} — model version: ${escapeHtml(data.model_version)}</small></p>
+    <p><small>${thresholdModeText} — model version: ${escapeHtml(data.model_version)}</small></p>
+    ${heatmapHtml}
     <ul class="findings-list">${findingsHtml}</ul>
   `;
 }
