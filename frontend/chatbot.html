@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Medical AI Assistant — Chatbot</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main class="container">
+    <nav class="site-nav">
+      <a href="index.html">Disease Diagnosis</a>
+      <a href="imaging.html">Image Analysis</a>
+      <a href="drugs.html">Drug Recommendation</a>
+      <a href="chatbot.html" class="active">Medical Chatbot</a>
+    </nav>
+
+    <header>
+      <h1>Medical Chatbot</h1>
+      <p class="subtitle">Educational information only — not a diagnosis or medical advice.</p>
+    </header>
+
+    <div class="field-row">
+      <label for="context-disease">Context condition (optional)</label>
+      <input
+        type="text"
+        id="context-disease"
+        placeholder="e.g. Migraine — softly biases retrieval toward this condition"
+        autocomplete="off"
+      />
+    </div>
+
+    <div id="chat-log" class="chat-log">
+      <p class="empty-text">Ask a question below to get started.</p>
+    </div>
+
+    <form id="chat-form" class="chat-form">
+      <input
+        type="text"
+        id="question-input"
+        placeholder="Ask a medical question…"
+        autocomplete="off"
+        required
+      />
+      <button type="submit" id="ask-button">Ask</button>
+    </form>
+  </main>
+
+  <script src="js/chatbot.js"></script>
+</body>
+</html>

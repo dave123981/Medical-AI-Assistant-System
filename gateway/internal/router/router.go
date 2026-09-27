@@ -21,6 +21,9 @@ func New(cfg *config.Config) http.Handler {
 	drugClient := clients.NewDrugClient(cfg.DrugServiceURL)
 	drugHandler := handlers.NewDrugHandler(drugClient)
 
+	chatbotClient := clients.NewChatbotClient(cfg.ChatbotServiceURL)
+	chatbotHandler := handlers.NewChatbotHandler(chatbotClient)
+
 	mux.HandleFunc("GET /api/v1/health", handlers.Health)
 
 	// Service 1 — fully wired
@@ -35,8 +38,8 @@ func New(cfg *config.Config) http.Handler {
 	mux.HandleFunc("GET /api/v1/drugs/conditions", drugHandler.GetConditions)
 	mux.HandleFunc("POST /api/v1/drugs/recommend", drugHandler.Recommend)
 
-	// Service 4 — stubbed on purpose
-	mux.HandleFunc("POST /api/v1/chatbot/ask", handlers.StubChatbotAsk)
+	// Service 4 — fully wired
+	mux.HandleFunc("POST /api/v1/chatbot/ask", chatbotHandler.Ask)
 
 	return middleware.Chain(mux,
 		middleware.Logging,

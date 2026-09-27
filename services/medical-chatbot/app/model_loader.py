@@ -24,7 +24,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from app.text_processing import stem_and_clean
 
 DATA_DIR = Path(os.getenv("CHATBOT_DATA_DIR", Path(__file__).resolve().parent.parent / "data"))
-CONFIDENCE_THRESHOLD = float(os.getenv("CHATBOT_CONFIDENCE_THRESHOLD", "0.3"))
+CONFIDENCE_THRESHOLD = float(os.getenv("CHATBOT_CONFIDENCE_THRESHOLD", "0.55"))
 
 
 class DataLoadError(Exception):

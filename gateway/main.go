@@ -16,6 +16,7 @@ func main() {
 	log.Printf("Diagnosis service -> %s", cfg.DiagnosisServiceURL)
 	log.Printf("Imaging service   -> %s", cfg.ImagingServiceURL)
 	log.Printf("Drug service      -> %s", cfg.DrugServiceURL)
+	log.Printf("Chatbot service   -> %s", cfg.ChatbotServiceURL)
 	if err := http.ListenAndServe(":"+cfg.Port, handler); err != nil {
 		log.Fatalf("server failed: %v", err)
 	}
