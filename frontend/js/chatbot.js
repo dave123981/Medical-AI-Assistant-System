@@ -50,9 +50,27 @@ function appendAssistantMessage(data) {
     ? `<div class="chat-confidence-warning">⚠ Low-confidence match — this may not directly answer your question.</div>`
     : "";
 
+  // data.generated / data.source_answer are new fields (v4) — a v1-v3
+  // response simply omits the generated badge and source-toggle entirely,
+  // so this degrades cleanly for every earlier version's response shape.
+  const generatedBadge = data.generated
+    ? `<span class="chat-generated-badge">AI-generated</span>`
+    : "";
+
+  const sourceToggle = data.generated
+    ? `
+      <button type="button" class="chat-source-toggle" data-expanded="false">
+        View original source
+      </button>
+      <div class="chat-source-answer hidden">${escapeHtml(data.source_answer)}</div>
+    `
+    : "";
+
   el.innerHTML = `
     <div class="chat-bubble chat-bubble-assistant">
+      ${generatedBadge}
       ${escapeHtml(data.answer)}
+      ${sourceToggle}
       ${confidenceNote}
       <div class="chat-meta">
         Matched: "${escapeHtml(data.matched_question)}" (similarity: ${data.similarity_score.toFixed(2)})

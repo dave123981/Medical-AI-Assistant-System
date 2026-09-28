@@ -446,3 +446,42 @@ button:disabled {
 .chat-form input {
   flex: 1;
 }
+
+.chat-generated-badge {
+  display: inline-block;
+  background: #ede9fe;
+  color: #5b21b6;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 6px;
+}
+
+.chat-source-toggle {
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.chat-source-answer {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--color-text);
+}
+
+.chat-source-answer.hidden {
+  display: none;
+}
